@@ -135,6 +135,7 @@ export function ShowcaseSlide({ products, index, onIndexChange, onExit, onExport
         </AnimatePresence>
       </div>
 
+      <p className="landscape-hint">Rotate for a fuller detailing slide · portrait still works</p>
       <div className="showcase-controls">
         <button type="button" className="btn btn-ghost" onClick={onExit}>
           Exit
