@@ -15,8 +15,7 @@ export function HomePage({ categories, productCounts, onDelete }: Props) {
     <div>
       <h1 className="page-title">Categories</h1>
       <p className="page-sub">
-        Build detailing sessions from therapeutic categories. Open a category to manage products, then
-        multi-select for showcase.
+        Theratrix detailing library — open a category, select product slides, then present or export.
       </p>
       <div className="toolbar">
         <button type="button" className="btn btn-dark" onClick={() => navigate('/category/new')}>
