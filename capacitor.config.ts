@@ -16,6 +16,8 @@ const config: CapacitorConfig = {
     StatusBar: {
       style: 'DARK',
       backgroundColor: '#15171a',
+      // Keep system status bar owned by the OS — do not draw under it.
+      overlaysWebView: false,
     },
   },
 };

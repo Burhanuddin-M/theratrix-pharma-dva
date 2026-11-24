@@ -40,6 +40,8 @@ ios/App/Podfile.lock
 ios/DerivedData
 *.xcuserdata
 
-# App local artifacts (keep sample apk path under artifacts tracked optionally)
+# Local build outputs
 artifacts/*.pdf
-android/local.properties
+
+# Local Android SDK (cloud/dev machines)
+.android-sdk/

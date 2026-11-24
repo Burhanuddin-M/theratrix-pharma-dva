@@ -14,7 +14,7 @@ import { ProductFormPage } from './pages/ProductFormPage';
 import { SelectionPage } from './pages/SelectionPage';
 import type { Category, ExportRecord, Product } from './types';
 import { uid } from './utils/image';
-import { buildSelectionPdf, downloadBlob } from './utils/pdf';
+import { buildSelectionPdf } from './utils/pdf';
 
 const SELECT_KEY = 'theratrix-dva-selection';
 const LOGO = './brand/theratrix-logo.png';
@@ -34,6 +34,7 @@ export default function App() {
   });
   const [showcase, setShowcase] = useState(false);
   const [showcaseIndex, setShowcaseIndex] = useState(0);
+  const [showcaseAllowExport, setShowcaseAllowExport] = useState(true);
   const [toast, setToast] = useState<string | null>(null);
   const [exporting, setExporting] = useState(false);
 
@@ -123,18 +124,36 @@ export default function App() {
       return;
     }
     setShowcaseIndex(0);
+    setShowcaseAllowExport(true);
     setShowcase(true);
+  };
+
+  const openExportShowcase = (item: ExportRecord) => {
+    const ids = item.productIds.filter((pid) => products.some((p) => p.id === pid));
+    if (!ids.length) {
+      flash('Products from this export are no longer available');
+      return;
+    }
+    setSelected(ids);
+    setShowcaseIndex(0);
+    setShowcaseAllowExport(false);
+    setShowcase(true);
+    flash(`Opened “${item.title}”`);
   };
 
   const exportPdf = async () => {
     if (!selectedProducts.length || exporting) return;
+    const suggested = `Theratrix ${selectedProducts.map((p) => p.shortCode).join('-')} ${new Date()
+      .toISOString()
+      .slice(0, 10)}`;
+    const entered = window.prompt('Name this export', suggested);
+    if (entered === null) return;
+    const title = entered.trim() || suggested;
+
     setExporting(true);
-    flash('Building PDF…');
+    flash('Saving export…');
     try {
-      const { blob, base64, pageCount } = await buildSelectionPdf(selectedProducts);
-      const title = `Theratrix ${selectedProducts.map((p) => p.shortCode).join('-')} ${new Date()
-        .toISOString()
-        .slice(0, 10)}`;
+      const { base64, pageCount } = await buildSelectionPdf(selectedProducts);
       const record: ExportRecord = {
         id: uid('exp'),
         title,
@@ -145,13 +164,12 @@ export default function App() {
         pageCount,
       };
       await db.exports.add(record);
-      downloadBlob(blob, `${title.replace(/\s+/g, '-')}.pdf`);
-      flash('PDF exported and saved locally');
+      flash(`Saved “${title}”`);
       setShowcase(false);
       navigate('/exports');
     } catch (err) {
       console.error(err);
-      flash('PDF export failed');
+      flash('Export failed');
     } finally {
       setExporting(false);
     }
@@ -244,6 +262,7 @@ export default function App() {
             element={
               <ExportsPage
                 exports={exports}
+                onOpen={openExportShowcase}
                 onDelete={(eid) => {
                   void db.exports.delete(eid).then(() => flash('Export deleted'));
                 }}
@@ -261,6 +280,8 @@ export default function App() {
           onIndexChange={setShowcaseIndex}
           onExit={() => setShowcase(false)}
           onExport={() => void exportPdf()}
+          exporting={exporting}
+          allowExport={showcaseAllowExport}
         />
       ) : null}
 

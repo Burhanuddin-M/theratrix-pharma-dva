@@ -15,7 +15,7 @@ export function ProductFormPage({ onSaved }: Props) {
   const isNew = !productId || productId === 'new';
   const navigate = useNavigate();
   const [name, setName] = useState('');
-  const [slideImage, setSlideImage] = useState('./seed/slide-bifolim.jpg');
+  const [slideImage, setSlideImage] = useState('');
   const [busy, setBusy] = useState(false);
 
   useEffect(() => {
@@ -40,8 +40,9 @@ export function ProductFormPage({ onSaved }: Props) {
   const submit = async (e: FormEvent) => {
     e.preventDefault();
     if (!id) return;
-    const now = Date.now();
     const trimmed = name.trim();
+    if (!trimmed || !slideImage) return;
+    const now = Date.now();
     const shortCode = deriveShortCode(trimmed);
     const tabColor = tabColorForName(trimmed);
     if (isNew) {
@@ -103,7 +104,11 @@ export function ProductFormPage({ onSaved }: Props) {
           />
         ) : null}
         <div className="form-actions">
-          <button className="btn btn-primary" disabled={busy || !name.trim()} type="submit">
+          <button
+            className="btn btn-primary"
+            disabled={busy || !name.trim() || !slideImage}
+            type="submit"
+          >
             Save product
           </button>
           <button type="button" className="btn btn-soft" onClick={() => navigate(`/category/${id}`)}>
