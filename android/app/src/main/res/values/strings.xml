@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">Pharma DVA</string>
+    <string name="title_activity_main">Pharma DVA</string>
+    <string name="package_name">com.pharma.dva</string>
+    <string name="custom_url_scheme">com.pharma.dva</string>
+</resources>
