@@ -1,3 +1,4 @@
+import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import type { ExportRecord } from '../types';
 import { downloadBlob, openPdfBase64 } from '../utils/pdf';
@@ -13,6 +14,8 @@ function toBlob(base64: string) {
   for (let i = 0; i < byteChars.length; i += 1) bytes[i] = byteChars.charCodeAt(i);
   return new Blob([bytes], { type: 'application/pdf' });
 }
+
+const ease = [0.22, 1, 0.36, 1] as const;
 
 export function ExportsPage({ exports, onDelete }: Props) {
   const navigate = useNavigate();
@@ -34,8 +37,14 @@ export function ExportsPage({ exports, onDelete }: Props) {
         <div className="empty">No exports yet. Run a showcase and tap Export PDF.</div>
       ) : (
         <div className="product-list">
-          {exports.map((item) => (
-            <div key={item.id} className="export-item">
+          {exports.map((item, i) => (
+            <motion.div
+              key={item.id}
+              className="export-item"
+              initial={{ opacity: 0, y: 12 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.38, ease, delay: Math.min(i * 0.05, 0.35) }}
+            >
               <div>
                 <h3>{item.title}</h3>
                 <p>
@@ -60,7 +69,7 @@ export function ExportsPage({ exports, onDelete }: Props) {
                   Delete
                 </button>
               </div>
-            </div>
+            </motion.div>
           ))}
         </div>
       )}

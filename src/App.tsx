@@ -261,6 +261,7 @@ export default function App() {
           onIndexChange={setShowcaseIndex}
           onExit={() => setShowcase(false)}
           onExport={() => void exportPdf()}
+          exporting={exporting}
         />
       ) : null}
 
