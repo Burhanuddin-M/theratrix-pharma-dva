@@ -7,7 +7,7 @@ export class PharmaDB extends Dexie {
   exports!: EntityTable<ExportRecord, 'id'>;
 
   constructor() {
-    super('theratrix-dva');
+    super('theratrix-dva-v2');
     this.version(1).stores({
       categories: 'id, name, createdAt',
       products: 'id, categoryId, shortCode, name, createdAt',
@@ -18,11 +18,13 @@ export class PharmaDB extends Dexie {
 
 export const db = new PharmaDB();
 
-/** One-time wipe of the legacy purple-era DB name if present. */
+/** Drop older local DBs so seed art and schema stay current. */
 export async function retireLegacyDb(): Promise<void> {
-  try {
-    await Dexie.delete('pharma-dva');
-  } catch {
-    /* ignore */
+  for (const name of ['pharma-dva', 'theratrix-dva']) {
+    try {
+      await Dexie.delete(name);
+    } catch {
+      /* ignore */
+    }
   }
 }
