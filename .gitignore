@@ -42,4 +42,6 @@ ios/DerivedData
 
 # App local artifacts (keep sample apk path under artifacts tracked optionally)
 artifacts/*.pdf
-android/local.properties
+
+# Local Android SDK (cloud/dev machines)
+.android-sdk/

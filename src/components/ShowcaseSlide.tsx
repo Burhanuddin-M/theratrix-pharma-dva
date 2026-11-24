@@ -200,9 +200,9 @@ export function ShowcaseSlide({
                     }
                   />
                 </div>
-                <p className="export-overlay-title">Crafting PDF</p>
+                <p className="export-overlay-title">Saving export</p>
                 <p className="export-overlay-sub">
-                  Composing {products.length} detailing slide
+                  Preparing {products.length} detailing slide
                   {products.length === 1 ? '' : 's'}…
                 </p>
                 <div className="export-progress-track" aria-hidden>
@@ -245,7 +245,7 @@ export function ShowcaseSlide({
           onClick={onExport}
           disabled={exporting}
         >
-          {exporting ? 'Exporting…' : 'Export PDF'}
+          {exporting ? 'Saving…' : 'Save export'}
         </button>
       </div>
     </div>
