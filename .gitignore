@@ -32,6 +32,7 @@ android/captures
 android/.idea
 *.apk
 *.aab
+!artifacts/*.apk
 
 # iOS local
 ios/App/Pods
@@ -39,8 +40,7 @@ ios/App/Podfile.lock
 ios/DerivedData
 *.xcuserdata
 
-# Local build outputs (kept on disk / Cursor artifacts, not published with the web app)
-artifacts/
+# Local build outputs
 artifacts/*.pdf
 
 # Local Android SDK (cloud/dev machines)
