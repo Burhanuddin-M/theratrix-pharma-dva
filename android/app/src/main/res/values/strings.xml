@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">Theratrix Pharmaceuticals</string>
+    <string name="title_activity_main">Theratrix Pharmaceuticals</string>
+    <string name="package_name">com.theratrix.pharma</string>
+    <string name="custom_url_scheme">com.theratrix.pharma</string>
+</resources>

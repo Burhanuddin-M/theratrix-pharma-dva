@@ -1,0 +1,45 @@
+# Logs
+logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+
+node_modules
+dist
+dist-ssr
+*.local
+
+# Editor
+.vscode/*
+!.vscode/extensions.json
+.idea
+.DS_Store
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+
+# Capacitor / Android local
+android/.gradle
+android/app/build
+android/build
+android/local.properties
+android/captures
+android/.idea
+*.apk
+*.aab
+!artifacts/*.apk
+
+# iOS local
+ios/App/Pods
+ios/App/Podfile.lock
+ios/DerivedData
+*.xcuserdata
+
+# App local artifacts (keep sample apk path under artifacts tracked optionally)
+artifacts/*.pdf
+android/local.properties
