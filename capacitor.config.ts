@@ -1,8 +1,8 @@
 import type { CapacitorConfig } from '@capacitor/cli';
 
 const config: CapacitorConfig = {
-  appId: 'com.pharma.dva',
-  appName: 'Pharma DVA',
+  appId: 'com.theratrix.pharma',
+  appName: 'Theratrix Pharmaceuticals',
   webDir: 'dist',
   server: {
     androidScheme: 'https',
@@ -10,12 +10,12 @@ const config: CapacitorConfig = {
   plugins: {
     SplashScreen: {
       launchShowDuration: 1200,
-      backgroundColor: '#3D2463',
+      backgroundColor: '#15171a',
       showSpinner: false,
     },
     StatusBar: {
       style: 'DARK',
-      backgroundColor: '#3D2463',
+      backgroundColor: '#15171a',
     },
   },
 };

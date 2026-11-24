@@ -5,6 +5,7 @@ import { ShowcaseSlide } from './components/ShowcaseSlide';
 import { Toast } from './components/Toast';
 import { db } from './db';
 import { ensureSeedData } from './db/seed';
+// ensureSeedData also retires legacy IndexedDB
 import { CategoryFormPage } from './pages/CategoryFormPage';
 import { CategoryProductsPage } from './pages/CategoryProductsPage';
 import { ExportsPage } from './pages/ExportsPage';
@@ -15,7 +16,8 @@ import type { Category, ExportRecord, Product } from './types';
 import { uid } from './utils/image';
 import { buildSelectionPdf, downloadBlob } from './utils/pdf';
 
-const SELECT_KEY = 'pharma-dva-selection';
+const SELECT_KEY = 'theratrix-dva-selection';
+const LOGO = './brand/theratrix-logo.png';
 
 export default function App() {
   const navigate = useNavigate();
@@ -33,6 +35,7 @@ export default function App() {
   const [showcase, setShowcase] = useState(false);
   const [showcaseIndex, setShowcaseIndex] = useState(0);
   const [toast, setToast] = useState<string | null>(null);
+  const [exporting, setExporting] = useState(false);
 
   useEffect(() => {
     let alive = true;
@@ -49,12 +52,15 @@ export default function App() {
     if (!ready) return;
     const subCats = liveQuery(() => db.categories.orderBy('createdAt').reverse().toArray()).subscribe({
       next: setCategories,
+      error: (err) => console.error(err),
     });
     const subProds = liveQuery(() => db.products.orderBy('createdAt').toArray()).subscribe({
       next: setProducts,
+      error: (err) => console.error(err),
     });
     const subExp = liveQuery(() => db.exports.orderBy('createdAt').reverse().toArray()).subscribe({
       next: setExports,
+      error: (err) => console.error(err),
     });
     return () => {
       subCats.unsubscribe();
@@ -69,7 +75,7 @@ export default function App() {
 
   useEffect(() => {
     if (!toast) return;
-    const t = window.setTimeout(() => setToast(null), 2600);
+    const t = window.setTimeout(() => setToast(null), 2800);
     return () => window.clearTimeout(t);
   }, [toast]);
 
@@ -91,7 +97,7 @@ export default function App() {
   const flash = (msg: string) => setToast(msg);
 
   const deleteCategory = async (id: string) => {
-    if (!confirm('Delete this category and its products?')) return;
+    if (!window.confirm('Delete this category and its products?')) return;
     await db.transaction('rw', db.categories, db.products, async () => {
       await db.products.where('categoryId').equals(id).delete();
       await db.categories.delete(id);
@@ -104,7 +110,7 @@ export default function App() {
   };
 
   const deleteProduct = async (id: string) => {
-    if (!confirm('Delete this product?')) return;
+    if (!window.confirm('Delete this product?')) return;
     await db.products.delete(id);
     setSelected((prev) => prev.filter((x) => x !== id));
     flash('Product deleted');
@@ -112,7 +118,8 @@ export default function App() {
 
   const startShowcase = () => {
     if (!selectedProducts.length) {
-      flash('Select at least one product');
+      flash('Select at least one product first');
+      navigate('/selection');
       return;
     }
     setShowcaseIndex(0);
@@ -120,11 +127,12 @@ export default function App() {
   };
 
   const exportPdf = async () => {
-    if (!selectedProducts.length) return;
+    if (!selectedProducts.length || exporting) return;
+    setExporting(true);
     flash('Building PDF…');
     try {
       const { blob, base64, pageCount } = await buildSelectionPdf(selectedProducts);
-      const title = `DVA ${selectedProducts.map((p) => p.shortCode).join('-')} ${new Date()
+      const title = `Theratrix ${selectedProducts.map((p) => p.shortCode).join('-')} ${new Date()
         .toISOString()
         .slice(0, 10)}`;
       const record: ExportRecord = {
@@ -144,15 +152,16 @@ export default function App() {
     } catch (err) {
       console.error(err);
       flash('PDF export failed');
+    } finally {
+      setExporting(false);
     }
   };
 
   if (!ready) {
     return (
-      <div className="app-shell" style={{ placeItems: 'center', display: 'grid' }}>
-        <p style={{ fontFamily: 'var(--font-serif)', fontSize: '1.4rem', color: '#3d2463' }}>
-          Preparing Pharma DVA…
-        </p>
+      <div className="app-shell loading-screen">
+        <img src={LOGO} alt="Theratrix Pharmaceuticals" />
+        <p>Preparing Theratrix Pharmaceuticals…</p>
       </div>
     );
   }
@@ -161,11 +170,14 @@ export default function App() {
     <div className="app-shell">
       {!showcase ? (
         <header className="app-header">
-          <Link to="/" className="brand">
-            <span className="brand-mark">Pharma DVA</span>
-            <span className="brand-sub">Digital Visual Aid</span>
+          <Link to="/" className="brand" aria-label="Theratrix Pharmaceuticals home">
+            <img className="brand-logo" src={LOGO} alt="Theratrix" />
+            <span className="brand-text">
+              <span className="brand-mark">Theratrix</span>
+              <span className="brand-sub">Pharmaceuticals</span>
+            </span>
           </Link>
-          <nav className="nav-actions">
+          <nav className="nav-actions" aria-label="Main">
             <Link className="btn btn-ghost" to="/">
               Categories
             </Link>
@@ -233,8 +245,7 @@ export default function App() {
               <ExportsPage
                 exports={exports}
                 onDelete={(eid) => {
-                  void db.exports.delete(eid);
-                  flash('Export deleted');
+                  void db.exports.delete(eid).then(() => flash('Export deleted'));
                 }}
               />
             }

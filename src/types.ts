@@ -6,19 +6,16 @@ export interface Category {
   updatedAt: number;
 }
 
+/** Product is a labeled detailing slide: name + one full-bleed image. */
 export interface Product {
   id: string;
   categoryId: string;
   name: string;
-  nameAccent?: string;
+  /** Short tab label derived from name (editable optional override). */
   shortCode: string;
   tabColor: string;
-  indication: string;
-  composition: string;
-  tagline: string;
-  formLabel: string;
-  mainImage: string;
-  notes?: string;
+  /** Full detailing slide image (shown 16:9 full-bleed in showcase). */
+  slideImage: string;
   createdAt: number;
   updatedAt: number;
 }

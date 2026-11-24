@@ -1,4 +1,4 @@
-import { Link } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import type { ExportRecord } from '../types';
 import { downloadBlob, openPdfBase64 } from '../utils/pdf';
 
@@ -15,17 +15,19 @@ function toBlob(base64: string) {
 }
 
 export function ExportsPage({ exports, onDelete }: Props) {
+  const navigate = useNavigate();
+
   return (
     <div>
       <h1 className="page-title">Past exports</h1>
       <p className="page-sub">Local PDF history stored on this device. Open, download, or delete.</p>
       <div className="toolbar">
-        <Link className="btn btn-dark" to="/">
+        <button type="button" className="btn btn-dark" onClick={() => navigate('/')}>
           Home
-        </Link>
-        <Link className="btn btn-accent" to="/selection">
+        </button>
+        <button type="button" className="btn btn-primary" onClick={() => navigate('/selection')}>
           New showcase
-        </Link>
+        </button>
       </div>
 
       {exports.length === 0 ? (
@@ -47,7 +49,7 @@ export function ExportsPage({ exports, onDelete }: Props) {
                 </button>
                 <button
                   type="button"
-                  className="btn btn-accent"
+                  className="btn btn-secondary"
                   onClick={() =>
                     downloadBlob(toBlob(item.pdfBase64), `${item.title.replace(/\s+/g, '-')}.pdf`)
                   }

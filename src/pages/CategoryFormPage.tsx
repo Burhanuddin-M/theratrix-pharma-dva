@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import type { FormEvent } from 'react';
-import { Link, useNavigate, useParams } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 import { db } from '../db';
 import type { Category } from '../types';
 import { compressImage, uid } from '../utils/image';
@@ -86,12 +86,12 @@ export function CategoryFormPage({ onSaved }: Props) {
           />
         ) : null}
         <div className="form-actions">
-          <button className="btn btn-dark" type="submit" disabled={busy || !name.trim()}>
+          <button className="btn btn-primary" type="submit" disabled={busy || !name.trim()}>
             Save
           </button>
-          <Link className="btn btn-danger" to="/">
+          <button type="button" className="btn btn-soft" onClick={() => navigate('/')}>
             Cancel
-          </Link>
+          </button>
         </div>
       </form>
     </div>

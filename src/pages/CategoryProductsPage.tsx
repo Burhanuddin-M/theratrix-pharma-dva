@@ -1,4 +1,4 @@
-import { Link, useParams } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 import { LazyImage } from '../components/LazyImage';
 import type { Category, Product } from '../types';
 
@@ -18,13 +18,17 @@ export function CategoryProductsPage({
   onDeleteProduct,
 }: Props) {
   const { id } = useParams();
+  const navigate = useNavigate();
   const category = categories.find((c) => c.id === id);
   const list = products.filter((p) => p.categoryId === id);
 
   if (!category) {
     return (
       <div className="empty">
-        Category not found. <Link to="/">Back home</Link>
+        Category not found.{' '}
+        <button type="button" className="btn btn-dark" onClick={() => navigate('/')}>
+          Back home
+        </button>
       </div>
     );
   }
@@ -33,18 +37,23 @@ export function CategoryProductsPage({
     <div>
       <h1 className="page-title">{category.name}</h1>
       <p className="page-sub">
-        Select products for showcasing, or edit product slides. Selected count: {selected.length}
+        Select products for showcasing. Each product is a name + full detailing slide image. Selected:{' '}
+        {selected.length}
       </p>
       <div className="toolbar">
-        <Link className="btn btn-dark" to={`/category/${category.id}/product/new`}>
+        <button
+          type="button"
+          className="btn btn-dark"
+          onClick={() => navigate(`/category/${category.id}/product/new`)}
+        >
           Add product
-        </Link>
-        <Link className="btn btn-accent" to="/selection">
+        </button>
+        <button type="button" className="btn btn-primary" onClick={() => navigate('/selection')}>
           Review selection ({selected.length})
-        </Link>
-        <Link className="btn btn-dark" to="/" style={{ background: '#1e2a5a' }}>
+        </button>
+        <button type="button" className="btn btn-soft" onClick={() => navigate('/')}>
           All categories
-        </Link>
+        </button>
       </div>
 
       {list.length === 0 ? (
@@ -55,19 +64,15 @@ export function CategoryProductsPage({
             const checked = selected.includes(p.id);
             return (
               <div key={p.id} className="product-row">
-                <LazyImage src={p.mainImage} alt={p.name} />
+                <LazyImage src={p.slideImage} alt={p.name} />
                 <div>
                   <h3>
-                    {p.name}{' '}
-                    <span className="chip" style={{ color: p.tabColor }}>
-                      {p.shortCode}
-                    </span>
+                    {p.name} <span className="chip">{p.shortCode}</span>
                   </h3>
-                  <p>{p.indication}</p>
-                  <p style={{ marginTop: 4 }}>{p.composition}</p>
+                  <p>Full detailing slide</p>
                 </div>
-                <div style={{ display: 'grid', gap: 8, justifyItems: 'end' }}>
-                  <label style={{ display: 'flex', gap: 8, alignItems: 'center', fontWeight: 700 }}>
+                <div className="row-actions">
+                  <label className="checkbox-label">
                     <input
                       className="checkbox"
                       type="checkbox"
@@ -76,9 +81,13 @@ export function CategoryProductsPage({
                     />
                     Select
                   </label>
-                  <Link className="btn btn-dark" to={`/category/${category.id}/product/${p.id}`}>
+                  <button
+                    type="button"
+                    className="btn btn-soft"
+                    onClick={() => navigate(`/category/${category.id}/product/${p.id}`)}
+                  >
                     Edit
-                  </Link>
+                  </button>
                   <button type="button" className="btn btn-danger" onClick={() => onDeleteProduct(p.id)}>
                     Delete
                   </button>

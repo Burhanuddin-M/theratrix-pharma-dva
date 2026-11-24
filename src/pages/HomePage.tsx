@@ -1,4 +1,4 @@
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { LazyImage } from '../components/LazyImage';
 import type { Category } from '../types';
 
@@ -9,6 +9,8 @@ interface Props {
 }
 
 export function HomePage({ categories, productCounts, onDelete }: Props) {
+  const navigate = useNavigate();
+
   return (
     <div>
       <h1 className="page-title">Categories</h1>
@@ -17,15 +19,15 @@ export function HomePage({ categories, productCounts, onDelete }: Props) {
         multi-select for showcase.
       </p>
       <div className="toolbar">
-        <Link className="btn btn-dark" to="/category/new">
+        <button type="button" className="btn btn-dark" onClick={() => navigate('/category/new')}>
           Add category
-        </Link>
-        <Link className="btn btn-accent" to="/selection">
+        </button>
+        <button type="button" className="btn btn-primary" onClick={() => navigate('/selection')}>
           Build showcase
-        </Link>
-        <Link className="btn btn-dark" to="/exports" style={{ background: '#1e2a5a' }}>
+        </button>
+        <button type="button" className="btn btn-secondary" onClick={() => navigate('/exports')}>
           Past exports
-        </Link>
+        </button>
       </div>
 
       {categories.length === 0 ? (
@@ -33,23 +35,29 @@ export function HomePage({ categories, productCounts, onDelete }: Props) {
       ) : (
         <div className="grid-cards">
           {categories.map((cat) => (
-            <div key={cat.id} className="media-card" style={{ display: 'block' }}>
-              <Link to={`/category/${cat.id}`}>
+            <article key={cat.id} className="media-card">
+              <Link className="card-link" to={`/category/${cat.id}`}>
                 <LazyImage src={cat.coverImage} alt={cat.name} />
                 <div className="meta">
                   <h3>{cat.name}</h3>
-                  <p>{productCounts[cat.id] ?? 0} products</p>
+                  <p>
+                    {productCounts[cat.id] ?? 0} product{(productCounts[cat.id] ?? 0) === 1 ? '' : 's'}
+                  </p>
                 </div>
               </Link>
-              <div className="toolbar" style={{ padding: '0 1rem 1rem', margin: 0 }}>
-                <Link className="btn btn-dark" to={`/category/${cat.id}/edit`}>
+              <div className="card-actions">
+                <button
+                  type="button"
+                  className="btn btn-soft"
+                  onClick={() => navigate(`/category/${cat.id}/edit`)}
+                >
                   Edit
-                </Link>
+                </button>
                 <button type="button" className="btn btn-danger" onClick={() => onDelete(cat.id)}>
                   Delete
                 </button>
               </div>
-            </div>
+            </article>
           ))}
         </div>
       )}

@@ -1,5 +1,5 @@
-import { motion, AnimatePresence } from 'framer-motion';
-import { useEffect, useMemo, useState } from 'react';
+import { AnimatePresence, motion } from 'framer-motion';
+import { useEffect, useState } from 'react';
 import type { Product } from '../types';
 
 interface Props {
@@ -10,113 +10,70 @@ interface Props {
   onExport: () => void;
 }
 
-type RevealKey = 'indication' | 'image' | 'copy';
-
 export function ShowcaseSlide({ products, index, onIndexChange, onExit, onExport }: Props) {
   const product = products[index];
-  const [revealed, setRevealed] = useState<Record<RevealKey, boolean>>({
-    indication: false,
-    image: false,
-    copy: false,
-  });
+  const [pulse, setPulse] = useState(true);
 
   useEffect(() => {
-    setRevealed({ indication: false, image: false, copy: false });
-    const t1 = window.setTimeout(() => setRevealed((r) => ({ ...r, indication: true })), 120);
-    const t2 = window.setTimeout(() => setRevealed((r) => ({ ...r, image: true })), 280);
-    const t3 = window.setTimeout(() => setRevealed((r) => ({ ...r, copy: true })), 420);
-    return () => {
-      window.clearTimeout(t1);
-      window.clearTimeout(t2);
-      window.clearTimeout(t3);
-    };
+    setPulse(false);
+    const t = window.setTimeout(() => setPulse(true), 40);
+    return () => window.clearTimeout(t);
   }, [product?.id]);
-
-  const nameParts = useMemo(() => {
-    if (!product) return { lead: '', accent: '' };
-    if (product.nameAccent && product.name.includes(product.nameAccent)) {
-      const idx = product.name.lastIndexOf(product.nameAccent);
-      return {
-        lead: product.name.slice(0, idx),
-        accent: product.nameAccent,
-      };
-    }
-    return { lead: product.name, accent: '' };
-  }, [product]);
 
   if (!product) return null;
 
-  const toggle = (key: RevealKey) => {
-    setRevealed((r) => ({ ...r, [key]: !r[key] }));
+  const go = (dir: -1 | 1) => {
+    if (!products.length) return;
+    onIndexChange((index + dir + products.length) % products.length);
   };
 
-  const go = (dir: -1 | 1) => {
-    const next = (index + dir + products.length) % products.length;
-    onIndexChange(next);
+  const replay = () => {
+    setPulse(false);
+    window.setTimeout(() => setPulse(true), 40);
   };
 
   return (
-    <div className="showcase">
+    <div className="showcase" role="dialog" aria-label="Product showcase">
       <div className="slide-stage">
         <AnimatePresence initial={false}>
           <motion.div
             key={product.id}
-            className="slide"
-            initial={{ opacity: 0.35, x: 28 }}
+            className="slide slide-fullbleed"
+            initial={{ opacity: 0.2, x: 28 }}
             animate={{ opacity: 1, x: 0 }}
-            exit={{ opacity: 0, x: -18 }}
+            exit={{ opacity: 0, x: -20, pointerEvents: 'none' }}
             transition={{ duration: 0.28, ease: [0.22, 1, 0.36, 1] }}
-            style={{ position: 'absolute', inset: 0 }}
-            drag="x"
-            dragConstraints={{ left: 0, right: 0 }}
-            dragElastic={0.12}
-            onDragEnd={(_, info) => {
-              if (info.offset.x < -80) go(1);
-              if (info.offset.x > 80) go(-1);
-            }}
+            style={{ position: 'absolute', inset: 0, zIndex: 2 }}
           >
-            <div className="slide-body">
-              <div className="slide-band" aria-hidden>
-                <svg viewBox="0 0 1200 120" preserveAspectRatio="none">
-                  <path
-                    d="M0,40 C220,110 420,10 640,55 C860,100 1040,20 1200,70 L1200,120 L0,120 Z"
-                    fill="#f7f3e8"
-                  />
-                </svg>
-              </div>
-              <motion.p
-                className={`slide-indication ${revealed.indication ? 'reveal-shown' : 'reveal-hidden'}`}
-                onClick={() => toggle('indication')}
-                whileTap={{ scale: 0.985 }}
-              >
-                {product.indication}
-              </motion.p>
-
-              <motion.div
-                className={`slide-image-wrap ${revealed.image ? 'reveal-shown' : 'reveal-hidden'}`}
-                onClick={() => toggle('image')}
-                whileTap={{ scale: 0.97 }}
-              >
-                <img src={product.mainImage} alt={product.name} decoding="async" />
-              </motion.div>
-
-              <motion.div
-                className={`slide-copy ${revealed.copy ? 'reveal-shown' : 'reveal-hidden'}`}
-                onClick={() => toggle('copy')}
-                whileTap={{ scale: 0.99 }}
-              >
-                <div className="product-hero">
-                  <div className="name">
-                    <span>{nameParts.lead}</span>
-                    <span className="accent">{nameParts.accent}</span>
-                    <sup style={{ fontSize: '0.35em', marginLeft: 2 }}>®</sup>
-                  </div>
-                  <span className="form">{product.formLabel}</span>
-                </div>
-                <p className="composition">{product.composition}</p>
-                <p className="tagline">{product.tagline}</p>
-              </motion.div>
-            </div>
+            <button
+              type="button"
+              className="slide-bleed-hit"
+              onClick={replay}
+              aria-label={`Animate ${product.name} slide`}
+              onTouchStart={(e) => {
+                const t = e.changedTouches[0];
+                (e.currentTarget as HTMLElement).dataset.tx = String(t.clientX);
+              }}
+              onTouchEnd={(e) => {
+                const start = Number((e.currentTarget as HTMLElement).dataset.tx || 0);
+                const end = e.changedTouches[0].clientX;
+                const dx = end - start;
+                if (Math.abs(dx) < 24) return;
+                if (dx < -70) go(1);
+                if (dx > 70) go(-1);
+              }}
+            >
+              <motion.img
+                className="slide-bleed-image"
+                src={product.slideImage}
+                alt={product.name}
+                decoding="async"
+                draggable={false}
+                animate={pulse ? { opacity: 1, scale: 1 } : { opacity: 0.35, scale: 1.04 }}
+                transition={{ duration: 0.45, ease: [0.22, 1, 0.36, 1] }}
+              />
+              <span className="slide-bleed-label">{product.name}</span>
+            </button>
 
             <div className="product-tabs" aria-label="Selected products">
               {products.map((p, i) => (
