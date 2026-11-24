@@ -34,6 +34,7 @@ export default function App() {
   });
   const [showcase, setShowcase] = useState(false);
   const [showcaseIndex, setShowcaseIndex] = useState(0);
+  const [showcaseAllowExport, setShowcaseAllowExport] = useState(true);
   const [toast, setToast] = useState<string | null>(null);
   const [exporting, setExporting] = useState(false);
 
@@ -123,6 +124,7 @@ export default function App() {
       return;
     }
     setShowcaseIndex(0);
+    setShowcaseAllowExport(true);
     setShowcase(true);
   };
 
@@ -134,6 +136,7 @@ export default function App() {
     }
     setSelected(ids);
     setShowcaseIndex(0);
+    setShowcaseAllowExport(false);
     setShowcase(true);
     flash(`Opened “${item.title}”`);
   };
@@ -278,6 +281,7 @@ export default function App() {
           onExit={() => setShowcase(false)}
           onExport={() => void exportPdf()}
           exporting={exporting}
+          allowExport={showcaseAllowExport}
         />
       ) : null}
 

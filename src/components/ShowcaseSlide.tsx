@@ -9,9 +9,12 @@ interface Props {
   onExit: () => void;
   onExport: () => void;
   exporting?: boolean;
+  /** Fresh present session — show Save export. Hidden when reopening a past export. */
+  allowExport?: boolean;
 }
 
 const ease = [0.22, 1, 0.36, 1] as const;
+const TRIPLE_MS = 450;
 
 export function ShowcaseSlide({
   products,
@@ -20,12 +23,15 @@ export function ShowcaseSlide({
   onExit,
   onExport,
   exporting = false,
+  allowExport = true,
 }: Props) {
   const product = products[index];
   const reduceMotion = useReducedMotion();
   const [pulse, setPulse] = useState(0);
   const [direction, setDirection] = useState(1);
   const prevIndex = useRef(index);
+  const clickCount = useRef(0);
+  const clickTimer = useRef<number | null>(null);
 
   useEffect(() => {
     if (index !== prevIndex.current) {
@@ -38,6 +44,13 @@ export function ShowcaseSlide({
     setPulse((n) => n + 1);
   }, [index, product?.id, products.length]);
 
+  useEffect(
+    () => () => {
+      if (clickTimer.current != null) window.clearTimeout(clickTimer.current);
+    },
+    [],
+  );
+
   if (!product) return null;
 
   const go = (dir: -1 | 1) => {
@@ -49,6 +62,24 @@ export function ShowcaseSlide({
   const replay = () => {
     if (exporting) return;
     setPulse((n) => n + 1);
+  };
+
+  const onSlideActivate = () => {
+    if (exporting) return;
+    clickCount.current += 1;
+    if (clickTimer.current != null) window.clearTimeout(clickTimer.current);
+
+    if (clickCount.current >= 3) {
+      clickCount.current = 0;
+      onExit();
+      return;
+    }
+
+    clickTimer.current = window.setTimeout(() => {
+      if (clickCount.current === 1) replay();
+      clickCount.current = 0;
+      clickTimer.current = null;
+    }, TRIPLE_MS);
   };
 
   const slideVariants = reduceMotion
@@ -94,9 +125,9 @@ export function ShowcaseSlide({
             <button
               type="button"
               className="slide-bleed-hit"
-              onClick={replay}
+              onClick={onSlideActivate}
               disabled={exporting}
-              aria-label={`Animate ${product.name} slide`}
+              aria-label={`${product.name} slide. Triple-click to exit.`}
               onTouchStart={(e) => {
                 const t = e.changedTouches[0];
                 (e.currentTarget as HTMLElement).dataset.tx = String(t.clientX);
@@ -107,6 +138,12 @@ export function ShowcaseSlide({
                 const end = e.changedTouches[0].clientX;
                 const dx = end - start;
                 if (Math.abs(dx) < 24) return;
+                // Swipe — cancel pending triple-click so it doesn’t exit mid-swipe.
+                if (clickTimer.current != null) {
+                  window.clearTimeout(clickTimer.current);
+                  clickTimer.current = null;
+                }
+                clickCount.current = 0;
                 if (dx < -70) go(1);
                 if (dx > 70) go(-1);
               }}
@@ -139,15 +176,6 @@ export function ShowcaseSlide({
                 }
                 transition={{ duration: reduceMotion ? 0.28 : 0.85, ease }}
               />
-              <motion.span
-                key={`label-${product.id}-${pulse}`}
-                className="slide-bleed-label"
-                initial={{ opacity: 0, y: 14 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.45, ease, delay: reduceMotion ? 0 : 0.28 }}
-              >
-                {product.name}
-              </motion.span>
             </button>
 
             <div className="product-tabs" aria-label="Selected products">
@@ -167,6 +195,17 @@ export function ShowcaseSlide({
                   {p.shortCode}
                 </button>
               ))}
+              {allowExport ? (
+                <button
+                  type="button"
+                  className="tab-export"
+                  disabled={exporting}
+                  onClick={onExport}
+                  aria-label={exporting ? 'Saving export' : 'Save export'}
+                >
+                  {exporting ? '…' : 'Save'}
+                </button>
+              ) : null}
             </div>
           </motion.div>
         </AnimatePresence>
@@ -221,32 +260,6 @@ export function ShowcaseSlide({
             </motion.div>
           ) : null}
         </AnimatePresence>
-      </div>
-
-      <p className="landscape-hint">Rotate for a fuller detailing slide · portrait still works</p>
-      <div className="showcase-controls">
-        <button type="button" className="btn btn-ghost" onClick={onExit} disabled={exporting}>
-          Exit
-        </button>
-        <div className="center">
-          <button type="button" className="btn btn-ghost" onClick={() => go(-1)} disabled={exporting}>
-            Prev
-          </button>
-          <span className="muted">
-            {index + 1} / {products.length}
-          </span>
-          <button type="button" className="btn btn-ghost" onClick={() => go(1)} disabled={exporting}>
-            Next
-          </button>
-        </div>
-        <button
-          type="button"
-          className="btn btn-primary"
-          onClick={onExport}
-          disabled={exporting}
-        >
-          {exporting ? 'Saving…' : 'Save export'}
-        </button>
       </div>
     </div>
   );
