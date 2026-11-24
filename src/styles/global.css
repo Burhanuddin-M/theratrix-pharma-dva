@@ -354,6 +354,7 @@ a {
   position: relative;
   overflow: hidden;
   background: var(--cream);
+  min-height: 0;
 }
 
 .slide {
@@ -361,6 +362,7 @@ a {
   inset: 0;
   display: grid;
   grid-template-columns: 1fr var(--tab-w);
+  background: var(--cream);
 }
 
 .slide-body {

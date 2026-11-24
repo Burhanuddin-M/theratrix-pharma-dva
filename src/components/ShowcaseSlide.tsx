@@ -58,14 +58,15 @@ export function ShowcaseSlide({ products, index, onIndexChange, onExit, onExport
   return (
     <div className="showcase">
       <div className="slide-stage">
-        <AnimatePresence mode="wait">
+        <AnimatePresence initial={false}>
           <motion.div
             key={product.id}
             className="slide"
-            initial={{ opacity: 0, x: 40 }}
+            initial={{ opacity: 0.35, x: 28 }}
             animate={{ opacity: 1, x: 0 }}
-            exit={{ opacity: 0, x: -40 }}
-            transition={{ duration: 0.35, ease: [0.22, 1, 0.36, 1] }}
+            exit={{ opacity: 0, x: -18 }}
+            transition={{ duration: 0.28, ease: [0.22, 1, 0.36, 1] }}
+            style={{ position: 'absolute', inset: 0 }}
             drag="x"
             dragConstraints={{ left: 0, right: 0 }}
             dragElastic={0.12}
